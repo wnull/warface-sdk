@@ -4,24 +4,43 @@ declare(strict_types=1);
 
 namespace Wnull\Warface\Api;
 
-use Wnull\Warface\Enum\EntityList;
+use Psr\Http\Client\ClientExceptionInterface;
+use Webmozart\Assert\Assert;
+use Wnull\Warface\ExceptionInterface;
 
 use function compact;
 
-class User extends AbstractApi implements UserInterface
+final class User extends AbstractApi
 {
-    public function achievements(string $name): array
+    /**
+     * This method returns player statistics.
+     *
+     * @return array|mixed
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
+     */
+    public function achievements(string $name)
     {
-        return $this->getByMethod(__FUNCTION__, compact('name'));
+        Assert::stringNotEmpty($name);
+
+        $response = $this->httpGet('user/achievements', compact('name'));
+
+        return $this->hydrateResponse($response, '');
     }
 
-    public function stat(string $name): array
+    /**
+     * This method returns player's achievements.
+     *
+     * @return array|mixed
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
+     */
+    public function stat(string $name)
     {
-        return $this->getByMethod(__FUNCTION__, compact('name'));
-    }
+        Assert::stringNotEmpty($name);
 
-    protected function entity(): EntityList
-    {
-        return EntityList::USER();
+        $response = $this->httpGet('user/stat', compact('name'));
+
+        return $this->hydrateResponse($response, '');
     }
 }

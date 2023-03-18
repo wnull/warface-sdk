@@ -1,6 +1,6 @@
 {
     "name": "wnull/warface-sdk",
-    "version": "5.0.0",
+    "version": "5.1.0",
     "description": "Fast and flexible SDK client of the Warface API in PHP.",
     "type": "library",
     "license": "MIT",
@@ -14,7 +14,8 @@
         "myclabs/php-enum": "^1.8",
         "php-http/message": "^1.0",
         "php-http/client-common": "^2.0",
-        "fig/http-message-util": "^1.1"
+        "fig/http-message-util": "^1.1",
+        "webmozart/assert": "^1.11"
     },
     "require-dev": {
         "php-http/guzzle7-adapter": "^1.0",

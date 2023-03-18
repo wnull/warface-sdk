@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace Wnull\Warface\Tests\Api;
 
+use Psr\Http\Client\ClientExceptionInterface;
 use Wnull\Warface\Api\User;
-use Wnull\Warface\Api\UserInterface;
-use Wnull\Warface\Exception\WarfaceApiException;
+use Wnull\Warface\ExceptionInterface;
 
+/** @uses TestCase::getApi() */
 beforeEach(fn () => $this->apiClass = User::class);
 
 it(
     'can request a user stat',
     /**
-     * @throws WarfaceApiException
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     function () {
-        /** @var UserInterface $api */
+        /** @var User $api */
         $api = $this->getApi();
 
         $name = 'sixin';
@@ -57,13 +59,15 @@ it(
 it(
     'can request a user achievements',
     /**
-     * @throws WarfaceApiException
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     function () {
-        /** @var UserInterface $api */
+        /** @var User $api */
         $api = $this->getApi();
 
         $name = 'sixin';
+        /** @uses TestCase::getRandomElement $element */
         $element = $this->getRandomElement($api->achievements($name));
 
         expect($element)
@@ -72,4 +76,3 @@ it(
             ->toHaveKey('completion_time');
     }
 );
-

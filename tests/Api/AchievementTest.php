@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace Wnull\Warface\Tests\Api;
 
+use Psr\Http\Client\ClientExceptionInterface;
 use Wnull\Warface\Api\Achievement;
-use Wnull\Warface\Api\AchievementInterface;
-use Wnull\Warface\Exception\WarfaceApiException;
+use Wnull\Warface\ExceptionInterface;
 
+/** @uses TestCase::getApi() */
 beforeEach(fn () => $this->apiClass = Achievement::class);
 
 it(
     'can request a catalog of achievements',
     /**
-     * @throws WarfaceApiException
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     function () {
-        /** @var AchievementInterface $api */
+        /** @var Achievement $api */
         $api = $this->getApi();
 
+        /** @uses TestCase::getRandomElement $element */
         $element = $this->getRandomElement($api->catalog());
 
         expect($element)

@@ -5,61 +5,93 @@ declare(strict_types=1);
 namespace Wnull\Warface\Api;
 
 use Fig\Http\Message\RequestMethodInterface;
+use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Client\ClientExceptionInterface;
-use Wnull\Warface\Client;
-use Wnull\Warface\Enum\EntityList;
-use Wnull\Warface\Exception\ApiResponseErrorException;
-use Wnull\Warface\Exception\WarfaceApiException;
-use Wnull\Warface\HttpClient\Message\ResponseMediator;
-use Wnull\Warface\HttpClient\Message\ResponseMediatorInterface;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Client\NetworkExceptionInterface;
+use Psr\Http\Message\ResponseInterface;
+use Wnull\Warface\Exception\HttpClientException;
+use Wnull\Warface\Exception\HttpServerException;
+use Wnull\Warface\Exception\UnknownErrorException;
+use Wnull\Warface\ExceptionInterface;
+use Wnull\Warface\HttpClient\RequestBuilder;
+use Wnull\Warface\Hydrator\HydratorInterface;
+
+use function count;
+use function http_build_query;
 
 abstract class AbstractApi
 {
-    protected Client $client;
+    protected ClientInterface $httpClient;
+    protected HydratorInterface $hydrator;
+    protected RequestBuilder $requestBuilder;
 
-    public function __construct(Client $client)
+    public function __construct(
+        ClientInterface   $httpClient,
+        RequestBuilder    $requestBuilder,
+        HydratorInterface $hydrator
+    )
     {
-        $this->client = $client;
-    }
-
-    abstract protected function entity(): EntityList;
-
-    /**
-     * @param array<string, mixed> $params
-     * @return array<string|int, mixed>
-     * @throws WarfaceApiException
-     */
-    protected function getByMethod(string $method, array $params = []): array
-    {
-        $path = $this->entity()->getValue() . '/' . $method;
-
-        return $this->get($path, $params)->getBodyContentsDecode();
+        $this->httpClient = $httpClient;
+        $this->requestBuilder = $requestBuilder;
+        $this->hydrator = $hydrator;
     }
 
     /**
-     * @param array<string, mixed> $parameters
-     * @throws WarfaceApiException
+     * @param array<int|string, mixed> $parameters
+     * @throws ClientExceptionInterface
      */
-    protected function get(string $path, array $parameters): ResponseMediatorInterface
+    protected function httpGet(string $path, array $parameters = []): ResponseInterface
     {
         if (count($parameters) > 0) {
             $path .= '?' . http_build_query($parameters);
         }
 
-        return $this->sendRequest(RequestMethodInterface::METHOD_GET, $path);
+        try {
+            $response = $this->httpClient->sendRequest(
+                $this->requestBuilder->create(RequestMethodInterface::METHOD_GET, $path)
+            );
+        } catch (NetworkExceptionInterface $e) {
+            throw HttpServerException::networkError($e);
+        }
+
+        return $response;
     }
 
     /**
-     * @throws WarfaceApiException
+     * @return array|mixed
+     * @throws ExceptionInterface
      */
-    private function sendRequest(string $method, string $uri): ResponseMediatorInterface
+    protected function hydrateResponse(ResponseInterface $response, string $class)
     {
-        try {
-            return new ResponseMediator(
-                $this->client->getHttpClient()->send($method, $uri)
-            );
-        } catch (ClientExceptionInterface $e) {
-            throw new ApiResponseErrorException($e->getMessage(), $e->getCode());
+        if ($response->getStatusCode() !== StatusCodeInterface::STATUS_OK) {
+            $this->handleErrors($response);
+        }
+
+        return $this->hydrator->hydrate($response, $class);
+    }
+
+    /**
+     * @throws ExceptionInterface
+     */
+    protected function handleErrors(ResponseInterface $response): void
+    {
+        $statusCode = $response->getStatusCode();
+        switch ($statusCode) {
+            case StatusCodeInterface::STATUS_BAD_REQUEST:
+                throw HttpClientException::badRequest($response);
+            case StatusCodeInterface::STATUS_UNAUTHORIZED:
+                throw HttpClientException::unauthorized($response);
+            case StatusCodeInterface::STATUS_PAYMENT_REQUIRED:
+                throw HttpClientException::requestFailed($response);
+            case StatusCodeInterface::STATUS_NOT_FOUND:
+                throw HttpClientException::notFound($response);
+            case StatusCodeInterface::STATUS_TOO_MANY_REQUESTS:
+                throw HttpClientException::tooManyRequests($response);
+            case StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR <= $statusCode:
+                throw HttpServerException::serverError($statusCode);
+            default:
+                throw new UnknownErrorException();
         }
     }
 }

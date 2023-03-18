@@ -7,6 +7,12 @@ Fast and flexible SDK client of the Warface API in PHP.
 
 > During technical weekly work on the game servers, the API may work unstable and give incorrect data.
 
+## Requirements
+
+- PHP >= 7.4
+- A [PSR-17 implementation](https://packagist.org/providers/psr/http-factory-implementation)
+- A [PSR-18 implementation](https://packagist.org/providers/psr/http-client-implementation)
+
 ## References
 
 - [Warface API documentation](https://ru.warface.com/wiki/index.php/API)
@@ -16,10 +22,8 @@ Fast and flexible SDK client of the Warface API in PHP.
 Via Composer:
 
 ```shell
-$ composer require wnull/warface-sdk guzzlehttp/guzzle:^7.3 http-interop/http-factory-guzzle:^1.0
+$ composer require wnull/warface-sdk
 ```
-
-We are decoupled from any HTTP messaging client with help by [HTTPlug](https://httplug.io/).
 
 ## Quickstart
 
@@ -27,61 +31,63 @@ Structure of the client class constructor.
 
 ```php
 public function __construct(
-    \Wnull\Warface\HttpClient\ClientBuilder $httpClientBuilder = null, 
-    \Wnull\Warface\Enum\RegionEnum $region = null,
-): \Wnull\Warface\Client
+    HttpClientConfigurator $configurator = null,     
+    HydratorInterface $hydrator = null,     
+    RequestBuilder $requestBuilder = null 
+): Client
 ```
 
 Create an instance of the client using the following code:
 
-```php
-$client = new \Wnull\Warface\Client();
-```
+  ```php
+  $client = new \Wnull\Warface\Client();
+  ```
 
-When creating a builder, you can add custom plugins to it.
+Creating and using additional client settings:
 
-```php
-$builder = (new \Wnull\Warface\HttpClient\ClientBuilder());
-$builder->addPlugin(
-    new class implements \Http\Client\Common\Plugin {
-        public function handleRequest(
-            \Psr\Http\Message\RequestInterface $request, 
-            callable $next, 
-            callable $first
-        ): \Http\Promise\Promise {
-            // TODO: Implement handleRequest() method.
+- Using the configurator class, you can configure the properties of the client class.
+
+  ```php
+  $configurator = new \Wnull\Warface\HttpClient\HttpClientConfigurator();
+  ```
+  - For example, to use the Symfony HTTP Client, first install the client and PSR-7 implementation.
+
+    ```shell
+    composer require wnull/warface-sdk symfony/http-client nyholm/psr7
+    ```
+    Next, set up the Warface SDK client with this HTTP client:
+
+    ```php
+    $configurator->setHttpClient(new \Symfony\Component\HttpClient\HttplugClient());
+    ```
+
+  - Using custom HTTP plugins:
+
+    ```php
+    $configurator->addPlugin(
+        new class implements \Http\Client\Common\Plugin {
+            public function handleRequest(
+                \Psr\Http\Message\RequestInterface $request, 
+                callable $next, 
+                callable $first
+            ): \Http\Promise\Promise {
+                // TODO: Implement handleRequest() method.
+            }
         }
-    }
-);
+    );
+    ```
 
-$client = new \Wnull\Warface\Client($builder);
-```
+  - By default, the `CIS` region is set in the client. It can be changed to `INTERNATIONAL` if necessary.
+    
+    ```php
+    $configurator->setRegion(\Wnull\Warface\Enum\RegionEnum::INTERNATIONAL());
+    ```
 
-By default, the `CIS` region is set in the client. It can be changed to `INTERNATIONAL` if necessary.
-
-```php
-$builder = null; // builder or null
-$client = new \Wnull\Warface\Client($builder, \Wnull\Warface\Enum\RegionEnum::INTERNATIONAL());
-```
-
-## Overview
-
-Thanks to [HTTPlug](https://httplug.io), we support the use of many HTTP clients. For example, to use the Symfony HTTP
-Client, first install the client and PSR-7 implementation.
-
-```shell
-composer require wnull/warface-sdk symfony/http-client nyholm/psr7
-```
-
-Next, set up the Warface SDK client with this HTTP client:
-
-```php
-$client = \Wnull\Warface\Client::createWithHttpClient(
-    new \Symfony\Component\HttpClient\HttplugClient()
-);
-```
-
-Alternatively, you can inject an HTTP client through the `Client` constructor.
+ - Hydration is used, the client uses `ArrayHydrator` by default, the result of which will always be an array. It is possible to change the response by changing the hydrator to `ModelHydrator`.
+    
+   ```php
+   $client = new \Wnull\Warface\Client(null, new \Wnull\Warface\Hydrator\ModelHydrator());
+   ```
 
 ## API
 

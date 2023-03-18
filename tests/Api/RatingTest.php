@@ -4,25 +4,26 @@ declare(strict_types=1);
 
 namespace Wnull\Warface\Tests\Api;
 
+use Psr\Http\Client\ClientExceptionInterface;
 use Wnull\Warface\Api\Rating;
-use Wnull\Warface\Api\RatingInterface;
 use Wnull\Warface\Enum\GameClass;
 use Wnull\Warface\Enum\RatingLeague;
-use Wnull\Warface\Exception\WarfaceApiException;
-use function expect;
-use function it;
+use Wnull\Warface\ExceptionInterface;
 
+/** @uses TestCase::getApi() */
 beforeEach(fn () => $this->apiClass = Rating::class);
 
 it(
     'can request a rating clan',
     /**
-     * @throws WarfaceApiException
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     function () {
-        /** @var RatingInterface $api */
+        /** @var Rating $api */
         $api = $this->getApi();
 
+        /** @uses TestCase::getRandomElement $element */
         $element = $this->getRandomElement($api->clan());
 
         expect($element)
@@ -36,13 +37,15 @@ it(
 it(
     'can request a rating monthly',
     /**
-     * @throws WarfaceApiException
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     function () {
-        /** @var RatingInterface $api */
+        /** @var Rating $api */
         $api = $this->getApi();
 
         $league = RatingLeague::ELITE();
+        /** @uses TestCase::getRandomElement $element */
         $element = $this->getRandomElement($api->monthly('', $league));
 
         expect($element)
@@ -58,13 +61,15 @@ it(
 it(
     'can request a rating top100',
     /**
-     * @throws WarfaceApiException
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     function () {
-        /** @var RatingInterface $api */
+        /** @var Rating $api */
         $api = $this->getApi();
 
         $class = GameClass::SNIPER();
+        /** @uses TestCase::getRandomElement $element */
         $element = $this->getRandomElement($api->top100($class));
 
         expect($element)

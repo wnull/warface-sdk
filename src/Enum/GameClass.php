@@ -14,7 +14,7 @@ use MyCLabs\Enum\Enum;
  * @method static GameClass SNIPER()
  * @method static GameClass SED()
  *
- * @extends Enum<string>
+ * @extends Enum<int>
  */
 final class GameClass extends Enum
 {

@@ -4,19 +4,27 @@ declare(strict_types=1);
 
 namespace Wnull\Warface\Api;
 
-use Wnull\Warface\Enum\EntityList;
+use Psr\Http\Client\ClientExceptionInterface;
+use Webmozart\Assert\Assert;
+use Wnull\Warface\ExceptionInterface;
 
 use function compact;
 
-class Clan extends AbstractApi implements ClanInterface
+final class Clan extends AbstractApi
 {
-    public function members(string $clan): array
+    /**
+     * This method returns information about the clan.
+     *
+     * @return array|mixed
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
+     */
+    public function members(string $clan)
     {
-        return $this->getByMethod(__FUNCTION__, compact('clan'));
-    }
+        Assert::stringNotEmpty($clan);
 
-    protected function entity(): EntityList
-    {
-        return EntityList::CLAN();
+        $response = $this->httpGet('clan/members', compact('clan'));
+
+        return $this->hydrateResponse($response, '');
     }
 }

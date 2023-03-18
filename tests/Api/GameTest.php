@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace Wnull\Warface\Tests\Api;
 
-use Wnull\Warface\Api\GameInterface;
+use Psr\Http\Client\ClientExceptionInterface;
 use Wnull\Warface\Api\Game;
-use Wnull\Warface\Exception\WarfaceApiException;
+use Wnull\Warface\ExceptionInterface;
 
+/** @uses TestCase::getApi() */
 beforeEach(fn () => $this->apiClass = Game::class);
 
 it(
     'can request a game missions',
     /**
-     * @throws WarfaceApiException
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     function () {
-        /** @var GameInterface $api */
+        /** @var Game $api */
         $api = $this->getApi();
 
+        /** @uses TestCase::getRandomElement $element */
         $element = $this->getRandomElement($api->missions());
 
         expect($element)

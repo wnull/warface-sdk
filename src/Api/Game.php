@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 namespace Wnull\Warface\Api;
 
-use Wnull\Warface\Enum\EntityList;
+use Psr\Http\Client\ClientExceptionInterface;
+use Wnull\Warface\ExceptionInterface;
 
-class Game extends AbstractApi implements GameInterface
+final class Game extends AbstractApi
 {
-    public function missions(): array
+    /**
+     * This method returns detailed information about available missions and rewards for completing.
+     *
+     * @return array|mixed
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
+     */
+    public function missions()
     {
-        return $this->getByMethod(__FUNCTION__);
-    }
+        $response = $this->httpGet('game/missions');
 
-    protected function entity(): EntityList
-    {
-        return EntityList::GAME();
+        return $this->hydrateResponse($response, '');
     }
 }

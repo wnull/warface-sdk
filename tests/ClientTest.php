@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace Wnull\Warface\Tests;
 
 use Wnull\Warface\Api\Achievement;
-use Wnull\Warface\Api\ClanInterface;
-use Wnull\Warface\Api\GameInterface;
-use Wnull\Warface\Api\RatingInterface;
-use Wnull\Warface\Api\UserInterface;
-use Wnull\Warface\Api\WeaponInterface;
+use Wnull\Warface\Api\Clan;
+use Wnull\Warface\Api\Game;
+use Wnull\Warface\Api\Rating;
+use Wnull\Warface\Api\User;
+use Wnull\Warface\Api\Weapon;
 use Wnull\Warface\Client;
 
 it('gets instances from the client', function () {
     $client = new Client();
 
     expect($client->achievement())->toBeInstanceOf(Achievement::class)
-    ->and($client->clan())->toBeInstanceOf(ClanInterface::class)
-        ->and($client->game())->toBeInstanceOf(GameInterface::class)
-        ->and($client->rating())->toBeInstanceOf(RatingInterface::class)
-        ->and($client->user())->toBeInstanceOf(UserInterface::class)
-        ->and($client->weapon())->toBeInstanceOf(WeaponInterface::class);
+    ->and($client->clan())->toBeInstanceOf(Clan::class)
+        ->and($client->game())->toBeInstanceOf(Game::class)
+        ->and($client->rating())->toBeInstanceOf(Rating::class)
+        ->and($client->user())->toBeInstanceOf(User::class)
+        ->and($client->weapon())->toBeInstanceOf(Weapon::class);
 });

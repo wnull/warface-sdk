@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 namespace Wnull\Warface\Api;
 
-use Wnull\Warface\Enum\EntityList;
+use Psr\Http\Client\ClientExceptionInterface;
+use Wnull\Warface\ExceptionInterface;
 
-class Weapon extends AbstractApi implements WeaponInterface
+class Weapon extends AbstractApi
 {
-    public function catalog(): array
+    /**
+     * This method returns a complete list of items available in the game, with their id and name.
+     *
+     * @return array|mixed
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
+     */
+    public function catalog()
     {
-        return $this->getByMethod(__FUNCTION__);
-    }
+        $response = $this->httpGet('weapon/catalog');
 
-    protected function entity(): EntityList
-    {
-        return EntityList::WEAPON();
+        return $this->hydrateResponse($response, '');
     }
 }

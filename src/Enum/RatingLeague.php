@@ -15,7 +15,7 @@ use MyCLabs\Enum\Enum;
  * @method static RatingLeague BRONZE()
  * @method static RatingLeague STEEL()
  *
- * @extends Enum<string>
+ * @extends Enum<int>
  */
 final class RatingLeague extends Enum
 {

@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 namespace Wnull\Warface\Api;
 
-use Wnull\Warface\Enum\EntityList;
+use Psr\Http\Client\ClientExceptionInterface;
+use Wnull\Warface\ExceptionInterface;
 
-class Achievement extends AbstractApi implements AchievementInterface
+final class Achievement extends AbstractApi
 {
-    public function catalog(): array
+    /**
+     * This method returns a complete list of achievements available in the game, with their id and name.
+     *
+     * @return array|mixed
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
+     */
+    public function catalog()
     {
-        return $this->getByMethod(__FUNCTION__);
-    }
+        $response = $this->httpGet('achievement/catalog');
 
-    protected function entity(): EntityList
-    {
-        return EntityList::ACHIEVEMENT();
+        return $this->hydrateResponse($response, '');
     }
 }
